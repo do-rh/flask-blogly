@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %} Home Page {% endblock %}
+
+
+{% block content %}
+<img src="{{user.image_url}}" alt="N/A">
+<h1> Edit a User </h1>
+
+<form action="/users/{{user.id}}/edit" method="POST">
+    <label for="first-name">First Name</label>
+    <input type="text" name="first-name" id="first-name" value="{{user.first_name}}">
+
+    <br>
+    
+    <label for="last-name">Last Name</label>
+    <input type="text" name="last-name" id="last-name" value="{{user.last_name}}">
+
+    <br>
+
+    <label for="image-url">Image URL</label>
+    <input type="text" name="image-url" id="image-url" value="{{user.image_url}}">
+
+    <button class="btn btn-primary">Save Changes</button>
+    <a href="/users/{{user.id}}" class="btn btn-danger">Cancel</a>
+</form>
+
+
+
+
+
+
+{% endblock %}
