@@ -67,7 +67,7 @@ def show_edit_user(user_id):
 
 @app.post('/users/<int:user_id>/edit')
 def edit_user_info(user_id):
-
+    """handling user info update, update database and redirect to users page"""
     user = User.query.get_or_404(user_id)
 
     first = request.form['first-name']
@@ -81,3 +81,12 @@ def edit_user_info(user_id):
     db.session.commit()
 
     return redirect(f'/users/{user_id}')
+
+@app.post('/users/<int:user_id>/delete')
+def delete_user(user_id):
+    """delete user from database, redirect to /users after deletion"""
+    user = User.query.get_or_404(user_id)
+    db.session.delete(user)
+    db.session.commit()
+
+    return redirect('/users')

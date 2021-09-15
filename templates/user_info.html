@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %} Home Page {% endblock %}
+{% block title %} User Info Page {% endblock %}
 
 
 {% block content %}
@@ -7,7 +7,10 @@
 <h1> {{user.first_name}} {{user.last_name}} </h1>
 
 <a href="/users/{{user.id}}/edit" class="btn btn-primary">Edit</a>
-<button class="btn btn-danger">Delete</button>
+<form action="/users/{{user.id}}/delete" method='POST'>
+    <button class="btn btn-danger">Delete</button>
+</form>
+<a href="/users" class='btn btn-success'>Home Page</a>
 
 
 
