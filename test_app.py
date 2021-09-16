@@ -1,13 +1,44 @@
 from unittest import TestCase
 from app import app
-from models import db, connect_db, User
-connect_db(app)
+from models import db, User
+
+# Use test database and don't clutter tests with SQL
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///blogly_test'
+app.config['SQLALCHEMY_ECHO'] = False
 
 # Make Flask errors be real errors, not HTML pages with error info
 app.config['TESTING'] = True
 
+# This is a bit of hack, but don't use Flask DebugToolbar
+app.config['DEBUG_TB_HOSTS'] = ['dont-show-debug-toolbar']
+
+db.drop_all()
+db.create_all()
 
 class BloglyTestCase(TestCase):
+
+    def setUp(self):
+        """Add sample user"""
+        User.query.delete()
+        new_user = User(first_name="Taco-Test",
+                        last_name="Cat",
+                        image_url="https://images-na.ssl-images-amazon.com/images/I/41nJXMOVSlL._SX331_BO1,204,203,200_.jpg")
+        db.session.add(new_user)
+        db.session.commit()
+        self.user_id = new_user.id
+
+        # new_user2 = User(first_name="Taco-Test2",
+        #                 last_name="Cat",
+        #                 image_url="https://images-na.ssl-images-amazon.com/images/I/41nJXMOVSlL._SX331_BO1,204,203,200_.jpg")
+        # db.session.add(new_user2)
+        # db.session.commit()
+        # self.user_id2 = new_user2.id
+    
+    def tearDown(self):
+        """Clean up any fouled transaction."""
+
+        db.session.rollback()
+    
     def test_show_all_users(self):
         """test if route renders page that show all users"""
         with app.test_client() as client:
@@ -21,28 +52,21 @@ class BloglyTestCase(TestCase):
         with app.test_client() as client:
             resp = client.post("/users/new",
                             data={
-                                "first-name": "Taco-Test",
-                                "last-name": "Cat",
+                                "first-name": "TEST-DOG-DOG",
+                                "last-name": "CAT-CAT",
                                 "image-url": "https://images-na.ssl-images-amazon.com/images/I/41nJXMOVSlL._SX331_BO1,204,203,200_.jpg"}, 
                                 follow_redirects=True)
             html = resp.get_data(as_text=True)
             self.assertIn("<h1> Users </h1>", html)
             self.assertIn("<ul>", html) 
-            self.assertIn("Taco-Test", html)
-            self.assertIn("Cat", html)  
+            self.assertIn("TEST-DOG-DOG", html)
+            self.assertIn("CAT-CAT", html)  
     
-    def get_test_user_id(self):
-        """get the user_id for the test user, and return id"""
-        user = User.query.filter(User.first_name=="Taco-Test", 
-                                User.last_name=="Cat", 
-                                User.image_url=="https://images-na.ssl-images-amazon.com/images/I/41nJXMOVSlL._SX331_BO1,204,203,200_.jpg")
-        user_id = user.one().id
-        return user_id
 
     def test_show_user_info(self):
         """test user info page of test user"""
         with app.test_client() as client:
-            user_id = BloglyTestCase.get_test_user_id(self)
+            user_id = self.user_id
             resp = client.get(f"/users/{user_id}")
             html = resp.get_data(as_text=True)
             self.assertIn("Taco-Test", html)
@@ -57,15 +81,15 @@ class BloglyTestCase(TestCase):
             self.assertIn("<h1>Create a User</h1>", html)
             self.assertIn("Add</button>", html) 
     
-
-class BloglyDeleteCase(TestCase):
     def test_delete_user(self):
         """test user deletion -- delete the test user"""
         with app.test_client() as client:
-            user_id = BloglyTestCase.get_test_user_id(self)
+            user_id = self.user_id
             resp = client.post(f"/users/{user_id}/delete",follow_redirects=True)
             html = resp.get_data(as_text=True)
             self.assertNotIn("Taco-Test", html)
             self.assertIn("<h1> Users </h1>", html)
             self.assertIn("<ul>", html) 
 
+
+    
