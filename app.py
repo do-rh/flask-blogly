@@ -1,7 +1,7 @@
 """Blogly application."""
 
 from flask import Flask, redirect, render_template, request
-from models import db, connect_db, User, Post
+from models import DEFAULT_IMG_URL, db, connect_db, User, Post
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///blogly'
@@ -20,6 +20,7 @@ db.create_all()
 @app.get('/')
 def home_page():
     """Redirect to /users"""
+
     return redirect('/users')
 
 @app.get('/users')
@@ -42,9 +43,10 @@ def add_user():
 
     first = request.form['first-name']
     last = request.form['last-name']
-    image_url = request.form['image-url']
+    image_url = request.form['image-url'] or None
 
     new_user = User(first_name=first, last_name=last, image_url=image_url)
+    
     db.session.add(new_user)
     db.session.commit()
 
@@ -56,6 +58,7 @@ def show_user_info(user_id):
 
     user = User.query.get_or_404(user_id)
     posts = user.posts
+
     return render_template('user_info.html', user=user, posts=posts)
 
 @app.get('/users/<int:user_id>/edit')
@@ -69,11 +72,12 @@ def show_edit_user(user_id):
 @app.post('/users/<int:user_id>/edit')
 def edit_user_info(user_id):
     """handling user info update, update database and redirect to users page"""
+
     user = User.query.get_or_404(user_id)
 
     first = request.form['first-name']
     last = request.form['last-name']
-    image_url = request.form['image-url']
+    image_url = request.form['image-url'] or DEFAULT_IMG_URL
     
     user.first_name = first
     user.last_name = last
@@ -86,15 +90,24 @@ def edit_user_info(user_id):
 @app.post('/users/<int:user_id>/delete')
 def delete_user(user_id):
     """delete user from database, redirect to /users after deletion"""
+
     user = User.query.get_or_404(user_id)
+    posts = user.posts
+
+    for post in posts:
+        db.session.delete(post) #still in same session, so only 1 commit
+    
     db.session.delete(user)
     db.session.commit()
 
     return redirect('/users')
 
+# ------------------------ POSTS ------------------------   
+
 @app.get('/users/<int:user_id>/posts/new')
 def show_new_post_form(user_id):
     """show new post HTML"""
+
     user = User.query.get_or_404(user_id)
     return render_template('new_post.html', user=user)
 
@@ -116,6 +129,7 @@ def add_new_post(user_id):
 @app.get('/posts/<int:post_id>')
 def show_post(post_id):
     """render post.html, show details of the post"""
+
     post = Post.query.get_or_404(post_id)
     user = post.user
 
@@ -124,12 +138,14 @@ def show_post(post_id):
 @app.get('/posts/<int:post_id>/edit')
 def show_post_edit_form(post_id):
     """render post edit form"""
+
     post = Post.query.get_or_404(post_id)
     return render_template('post_edit.html',post=post)
 
 @app.post('/posts/<int:post_id>/edit')
 def update_post_info(post_id):
     """update post info in database and redirect to post page"""
+
     post = Post.query.get_or_404(post_id)
     title = request.form["title"]
     content = request.form["content"]
@@ -142,6 +158,7 @@ def update_post_info(post_id):
 @app.post('/posts/<int:post_id>/delete')
 def delete_post(post_id):
     """delete the post in database and redirect to user info page"""
+    
     post = Post.query.get_or_404(post_id)
     user_id = post.user.id
     db.session.delete(post)

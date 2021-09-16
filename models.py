@@ -4,7 +4,7 @@ from datetime import datetime
 
 db = SQLAlchemy()
 
-DEFAULT_IMG_URL = 'https://i.pinimg.com/originals/7f/26/e7/7f26e71b2c84e6b16d4f6d3fd8a58bca.png'
+DEFAULT_IMG_URL = "https://www.gannett-cdn.com/presto/2020/03/17/USAT/c0eff9ec-e0e4-42db-b308-f748933229ee-XXX_ThinkstockPhotos-200460053-001.jpg"
 def connect_db(app):
     """Models for Blogly."""
     db.app = app
@@ -26,12 +26,14 @@ class User(db.Model):
     last_name = db.Column(db.String(50),     # could also use db.text
                             nullable=False)
     
-    image_url = db.Column(db.String, default=DEFAULT_IMG_URL)
+    image_url = db.Column(db.String, 
+                default=DEFAULT_IMG_URL,
+                nullable=False) #originally was nullable - if not given, it's not an unknown
 
     posts = db.relationship('Post', backref='user')
 
 class Post(db.Model):
-    """User"""  #more description on the model itself, clarify possible confusion
+    """Post"""
 
     __tablename__ = "posts"
 
@@ -45,9 +47,11 @@ class Post(db.Model):
     content = db.Column(db.Text,
                         nullable=False)
     
-    created_at = db.Column(db.DateTime, nullable=False,
-                default=datetime.utcnow)
+    created_at = db.Column(
+        db.DateTime, 
+        nullable=False,
+        default=datetime.utcnow)
 
     user_id = db.Column(db.Integer, 
               db.ForeignKey("users.id"), 
-              nullable=False)
+              nullable=False) #always remember!
