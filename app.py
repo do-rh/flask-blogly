@@ -55,7 +55,8 @@ def show_user_info(user_id):
     """Showing individual user info."""
 
     user = User.query.get_or_404(user_id)
-    return render_template('user_info.html', user=user)
+    posts = user.posts
+    return render_template('user_info.html', user=user, posts=posts)
 
 @app.get('/users/<int:user_id>/edit')
 def show_edit_user(user_id):
@@ -101,7 +102,6 @@ def show_new_post_form(user_id):
 def add_new_post(user_id):
     """add new post to database and redirect to user's page"""
 
-
     title = request.form['title']
     content = request.form['content']
 
@@ -112,3 +112,38 @@ def add_new_post(user_id):
     db.session.commit()
 
     return redirect(f'/users/{user_id}')
+
+@app.get('/posts/<int:post_id>')
+def show_post(post_id):
+    """render post.html, show details of the post"""
+    post = Post.query.get_or_404(post_id)
+    user = post.user
+
+    return render_template('post.html',user=user, post=post)
+
+@app.get('/posts/<int:post_id>/edit')
+def show_post_edit_form(post_id):
+    """render post edit form"""
+    post = Post.query.get_or_404(post_id)
+    return render_template('post_edit.html',post=post)
+
+@app.post('/posts/<int:post_id>/edit')
+def update_post_info(post_id):
+    """update post info in database and redirect to post page"""
+    post = Post.query.get_or_404(post_id)
+    title = request.form["title"]
+    content = request.form["content"]
+    post.title = title
+    post.content = content
+    db.session.commit()
+
+    return redirect(f'/posts/{post_id}')
+
+@app.post('/posts/<int:post_id>/delete')
+def delete_post(post_id):
+    """delete the post in database and redirect to user info page"""
+    post = Post.query.get_or_404(post_id)
+    user_id = post.user.id
+    db.session.delete(post)
+    db.session.commit()
+    return redirect(f"/users/{user_id}")

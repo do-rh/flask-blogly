@@ -6,21 +6,20 @@
 <h1> Edit a User </h1>
 
 <form action="/users/{{user.id}}/edit" method="POST">
-    <label for="first-name">First Name</label>
-    <input type="text" name="first-name" id="first-name" value="{{user.first_name}}">
+    <label for="first-name" class="form-label">First Name</label>
+    <input type="text" name="first-name" id="first-name" value="{{user.first_name}}" class="form-control">
 
-    <br>
 
-    <label for="last-name">Last Name</label>
-    <input type="text" name="last-name" id="last-name" value="{{user.last_name}}">
+    <label for="last-name" class="form-label">Last Name</label>
+    <input type="text" name="last-name" id="last-name" value="{{user.last_name}}" class="form-control">
 
-    <br>
+    <label for="image-url" class="form-label">Image URL</label>
+    <input type="text" name="image-url" id="image-url" value="{{user.image_url}}" class="form-control">
+    <div class="my-3">
+        <button class="btn btn-primary">Save Changes</button>
+        <a href="/users/{{user.id}}" class="btn btn-danger">Cancel</a>
+    </div>
 
-    <label for="image-url">Image URL</label>
-    <input type="text" name="image-url" id="image-url" value="{{user.image_url}}">
-
-    <button class="btn btn-primary">Save Changes</button>
-    <a href="/users/{{user.id}}" class="btn btn-danger">Cancel</a>
 </form>
 
 
