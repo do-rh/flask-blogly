@@ -1,7 +1,7 @@
 """Blogly application."""
 
 from flask import Flask, redirect, render_template, request
-from models import DEFAULT_IMG_URL, db, connect_db, User, Post
+from models import DEFAULT_IMG_URL, db, connect_db, User, Post, Tag, PostTag
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///blogly'
@@ -164,3 +164,25 @@ def delete_post(post_id):
     db.session.delete(post)
     db.session.commit()
     return redirect(f"/users/{user_id}")
+
+# ------------------------ TAGS ------------------------
+
+@app.get('/tags')
+def show_all_tags():
+    """render tags.html to show all tags in database"""  
+    tags = Tag.query.all()
+    return render_template('tags.html', tags=tags)
+    
+@app.get('/tags/new')
+def show_tag_form():
+    """render form to add a new tag"""
+    return render_template('tag_form.html')
+
+@app.post('/tags/new')
+def add_tag():
+    """render form to add a new tag"""
+    tag_name = request.form["tag-name"]
+    new_tag = Tag(name=tag_name)
+    db.session.add(new_tag)
+    db.session.commit()
+    return redirect('/tags')
